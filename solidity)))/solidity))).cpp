@@ -1,47 +1,54 @@
-﻿#include <iostream>
+#include <iostream>
+using namespace std;
 
 class BankAccount {
 private:
-    int accountNumber;
-    double balance;
-    double interestRate;
+    int accountNum;
+    double accountBalance;
+    double rateInterest;
 
 public:
-    BankAccount(int accNumber, double initialBalance) {
-        accountNumber = accNumber;
-        balance = initialBalance;
-        interestRate = 0.0;
-    }
+    BankAccount(int num, double balance) : accountNum(num), accountBalance(balance), rateInterest(0.0) {}
 
     void deposit(double amount) {
-        balance += amount;
+        if (amount > 0) {
+            accountBalance += amount;
+            cout << "Депозит успешно добавлен. Текущий баланс: " << accountBalance << endl;
+        }
+        else {
+            cout << "Сумма должна быть больше нуля!" << endl;
+        }
     }
 
     bool withdraw(double amount) {
-        if (amount <= balance) {
-            balance -= amount;
-            return true;
-        }
-        else {
-            std::cout << "Insufficient funds!" << std::endl;
+        if (amount <= 0) {
+            cout << "Сумма должна быть больше нуля!" << endl;
             return false;
         }
+        else if (amount > accountBalance) {
+            cout << "Недостаточно средств на счете!" << endl;
+            return false;
+        }
+        accountBalance -= amount;
+        cout << "Средства успешно сняты. Текущий баланс: " << accountBalance << endl;
+        return true;
     }
 
-    double getBalance() {
-        return balance;
-    }
-
-    double getInterest() {
-        return balance * interestRate * (1.0 / 12.0);
+    double getBalance() const {
+        return accountBalance;
     }
 
     void setInterestRate(double newRate) {
-        interestRate = newRate;
+        if (newRate >= 0) {
+            rateInterest = newRate;
+        }
+        else {
+            cout << "Процентная ставка не может быть отрицательной!" << endl;
+        }
     }
 
-    int getAccountNumber() {
-        return accountNumber;
+    int getAccountNumber() const {
+        return accountNum;
     }
 
     friend bool transfer(BankAccount& from, BankAccount& to, double amount);
@@ -52,25 +59,50 @@ bool transfer(BankAccount& from, BankAccount& to, double amount) {
         to.deposit(amount);
         return true;
     }
-    else {
-        std::cout << "Transfer failed: Insufficient funds in the source account!" << std::endl;
-        return false;
-    }
+    return false;
+}
+
+void showMenu() {
+    cout << "\n Меню Управления Счетом\n";
+    cout << "1. Показать баланс\n";
+    cout << "2. Депозит\n";
+    cout << "3. Снять наличные\n";
+    cout << "4. Выход\n";
+    cout << "Выберите действие: ";
 }
 
 int main() {
-    BankAccount acc1(12345, 1000.0);
-    BankAccount acc2(54321, 500.0);
+    setlocale(LC_ALL, "Russian");
+    BankAccount myAccount(1, 1000); 
+    int choice;
+    double amount;
 
-    std::cout << "Initial balances:" << std::endl;
-    std::cout << "Account 1: " << acc1.getBalance() << std::endl;
-    std::cout << "Account 2: " << acc2.getBalance() << std::endl;
-
-    transfer(acc1, acc2, 200.0);
-
-    std::cout << "\nAfter transfer:" << std::endl;
-    std::cout << "Account 1: " << acc1.getBalance() << std::endl;
-    std::cout << "Account 2: " << acc2.getBalance() << std::endl;
+    while (true) {
+        showMenu();
+        cin >> choice;
+        switch (choice) {
+        case 1: 
+            cout << "Текущий баланс: " << myAccount.getBalance() << endl;
+            break;
+        case 2: 
+            cout << "Введите сумму для депозита: ";
+            cin >> amount;
+            myAccount.deposit(amount);
+            break;
+        case 3: 
+            cout << "Введите сумму для снятия: ";
+            cin >> amount;
+            if (!myAccount.withdraw(amount)) {
+                cout << "Операция не выполнена." << endl;
+            }
+            break;
+        case 4: 
+            cout << "Выход из программы..." << endl;
+            return 0;
+        default:
+            cout << "Неверный выбор. Пожалуйста, попробуйте снова." << endl;
+        }
+    }
 
     return 0;
 }
